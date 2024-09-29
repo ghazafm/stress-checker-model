@@ -8,8 +8,8 @@ PREPROCESSOR_DIR = Model/preprocessor
 NEW_DATA_DIR = Data/clean
 PREDICT_DATA_DIR = Result/predict
 DEPLOYED_MODEL_FILE = $(MODEL_DIR)/deploy_model_path.txt
-COLUMN_TO_REMOVE = Cabin PassengerId Name
-TARGET_COL = Survived
+COLUMN_TO_REMOVE = nothin
+TARGET_COL = stress_level
 ID_COL = PassengerId
 RANDOM_STATE = 42
 DEPLOYED_MODEL=$(shell cat $(DEPLOYED_MODEL_FILE))
@@ -22,6 +22,13 @@ VENV_ACTIVATE = source $(VENV_DIR)/bin/activate
 PYTHON = $(VENV_DIR)/bin/python
 REQUIREMENTS_FILE = requirements.txt
 ENVIRONMENT_FILE = environment.yml
+
+MLFLOW_PORT = 8888
+MLFLOW_HOST = 0.0.0.0
+ARTIFACT_ROOT = Model/mlruns
+
+MODEL_NAME ?= xgboost
+PARAMS ?= 
 
 # Default target
 .PHONY: all
@@ -90,8 +97,8 @@ data: check_env timestamp
 .PHONY: train
 train: data
 	@echo
-	@echo "Training the machine learning model..."
-	$(PYTHON) Script/train_model.py --data_dir $(NEW_DATA_DIR) --model_dir $(MODEL_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE))
+	@echo "Training the machine learning model with model: $(MODEL_NAME) and params: $(PARAMS)"
+	$(PYTHON) Script/train_model.py --data_dir $(NEW_DATA_DIR) --model_dir $(MODEL_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE)) --model_name $(MODEL_NAME) --params '$(PARAMS)'
 	@echo "Model training completed."
 
 # Model evaluation
@@ -109,6 +116,34 @@ deploy: train
 	@echo "Deploying the trained model..."
 	$(PYTHON) Script/deploy_model.py --model_path $(LATEST_MODEL) --model_dir $(MODEL_DIR) --metadata_dir $(METADATA_RESULT_DIR) > $(DEPLOYED_MODEL_FILE) --timestamp $(shell cat $(TIMESTAMP_FILE))
 	@echo "Model has been saved and deployed. Model path stored in $(DEPLOYED_MODEL_FILE)."
+
+.PHONY: mlflow
+mlflow: check-env
+	@echo "Running MLflow server on http://$(MLFLOW_HOST):$(MLFLOW_PORT)"
+	@if [ "$(USE_VENV)" = "true" ]; then \
+		$(VENV_ACTIVATE) && \
+		mlflow server --host $(MLFLOW_HOST) --port $(MLFLOW_PORT) \
+		--backend-store-uri $(ARTIFACT_ROOT); \
+	else \
+		source $(shell conda info --base)/etc/profile.d/conda.sh && \
+		conda activate $(CONDA_ENV) && \
+		mlflow server --host $(MLFLOW_HOST) --port $(MLFLOW_PORT) \
+		--backend-store-uri $(ARTIFACT_ROOT); \
+	fi
+
+# Check whether to use venv or conda
+.PHONY: check_env
+check-env:
+	@if [ -d "$(VENV_DIR)" ]; then \
+		echo "Using venv environment"; \
+		USE_VENV=true; \
+	elif conda info --envs | grep -q "$(CONDA_ENV)"; then \
+		echo "Using conda environment"; \
+		USE_VENV=false; \
+	else \
+		echo "No virtual environment found. Please set up venv or conda."; \
+		exit 1; \
+	fi
 
 # Prediction on new data using the deployed model
 .PHONY: predict

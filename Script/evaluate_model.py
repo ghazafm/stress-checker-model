@@ -2,9 +2,12 @@ import datetime
 import os
 import argparse
 import pandas as pd
+from sklearn.base import r2_score
 from sklearn.metrics import (
     classification_report,
     accuracy_score,
+    mean_absolute_error,
+    mean_squared_error,
     precision_score,
     recall_score,
     f1_score,
@@ -62,21 +65,23 @@ def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
 
     # Calculate performance metrics
-    accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred, average="weighted")
-    recall = recall_score(y_test, y_pred, average="weighted")
-    f1 = f1_score(y_test, y_pred, average="weighted")
+    mse = mean_squared_error(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
 
-    logging.info(f"Accuracy: {accuracy:.4f}")
-    logging.info(f"Precision: {precision:.4f}")
-    logging.info(f"Recall: {recall:.4f}")
-    logging.info(f"F1-score: {f1:.4f}")
+    print(f'Mean Squared Error: {mse}')
+    print(f'Mean Absolute Error: {mae}')
+    print(f'R-squared: {r2}')
+
+    logging.info(f"Mean Squared Error: {mse:.4f}")
+    logging.info(f"Mean Absolute Error: {mae:.4f}")
+    logging.info(f"R-squared: {r2:.4f}")
 
     # Generate a detailed classification report
     report = classification_report(y_test, y_pred)
     logging.info("Classification Report:\n" + report)
 
-    return accuracy, precision, recall, f1, report
+    return mse, mae, r2, report
 
 
 def save_evaluation_results(

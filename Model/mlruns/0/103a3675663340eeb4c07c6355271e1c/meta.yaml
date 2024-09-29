@@ -1,0 +1,15 @@
+artifact_uri: /Users/fauzanghaza/Documents/[04]Student/[03]Competition/[06]IFest/Machine_learning/stress-checker-model/Model/mlruns/0/103a3675663340eeb4c07c6355271e1c/artifacts
+end_time: 1727579277110
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 103a3675663340eeb4c07c6355271e1c
+run_name: wise-moth-829
+run_uuid: 103a3675663340eeb4c07c6355271e1c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1727579277100
+status: 4
+tags: []
+user_id: fauzanghaza

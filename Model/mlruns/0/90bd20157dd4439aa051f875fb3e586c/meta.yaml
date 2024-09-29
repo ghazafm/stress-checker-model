@@ -1,0 +1,15 @@
+artifact_uri: /Users/fauzanghaza/Documents/[04]Student/[03]Competition/[06]IFest/Machine_learning/stress-checker-model/Model/mlruns/0/90bd20157dd4439aa051f875fb3e586c/artifacts
+end_time: 1727579153892
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 90bd20157dd4439aa051f875fb3e586c
+run_name: bittersweet-seal-658
+run_uuid: 90bd20157dd4439aa051f875fb3e586c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1727579153765
+status: 4
+tags: []
+user_id: fauzanghaza

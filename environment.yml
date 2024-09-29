@@ -1,12 +1,18 @@
 name: myenv
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - python=3.10
-  - numpy
   - pandas
   - scikit-learn
-  - matplotlib
   - xgboost
+  - numpy
+  - imbalanced-learn
+  - matplotlib
   - lightgbm
   - catboost
+  - mlflow
+  - ipykernel
+  - seaborn
+  - bentoml

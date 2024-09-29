@@ -62,15 +62,11 @@ def scale(X):
 
 # Function to save preprocessing objects
 def save_preprocessing_objects(
-    scaler, label_encoders, imputer, removed_cols, output_dir, timestamp
+    scaler, removed_cols, output_dir, timestamp
 ):
     logging.info(f"Saving preprocessing objects to {output_dir}...")
     os.makedirs(output_dir, exist_ok=True)
     joblib.dump(scaler, os.path.join(output_dir, f"scaler_{timestamp}.pkl"))
-    joblib.dump(
-        label_encoders, os.path.join(output_dir, f"label_encoders_{timestamp}.pkl")
-    )
-    joblib.dump(imputer, os.path.join(output_dir, f"imputer_{timestamp}.pkl"))
     joblib.dump(removed_cols, os.path.join(output_dir, f"removed_cols_{timestamp}.pkl"))
     logging.info("Preprocessing objects saved successfully.")
 
@@ -143,15 +139,15 @@ def save_data(X_train, X_test, y_train, y_test, data_dir):
 # Main function
 def main(data_dir,data_new_dir, output_dir, target_col, random_state, columns_to_remove, timestamp):
     # Load raw data
-    raw_data_path = os.path.join(data_dir, "train.csv")
+    raw_data_path = os.path.join(data_dir, "StressLevelDataset.csv")
     df = load_data(raw_data_path)
 
     # Clean the data
-    df_cleaned, label_encoders, imputer = clean_data(df, columns_to_remove)
+    # df_cleaned, label_encoders, imputer = clean_data(df, columns_to_remove)
 
     # Split the data into train and test sets
     X_train, X_test, y_train, y_test = split_data(
-        df_cleaned, target_col, random_state=random_state
+        df, target_col, random_state=random_state
     )
 
     # Scale features
@@ -168,7 +164,7 @@ def main(data_dir,data_new_dir, output_dir, target_col, random_state, columns_to
 
     # Save preprocessing objects for future use (for prediction)
     save_preprocessing_objects(
-        scaler, label_encoders, imputer, columns_to_remove, output_dir, timestamp
+        scaler, columns_to_remove, output_dir, timestamp
     )
 
     logging.info("Data preparation and preprocessing completed successfully!")

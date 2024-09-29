@@ -158,5 +158,9 @@ if __name__ == "__main__":
 
     # Deploy the model with automatically extracted model name and additional metadata
     deploy_model(
-        args.model_path, args.model_dir, args.metadata_dir, additional_metadata, timestamp=args.timestamp
+        args.model_path,
+        args.model_dir,
+        args.metadata_dir,
+        additional_metadata,
+        timestamp=args.timestamp,
     )

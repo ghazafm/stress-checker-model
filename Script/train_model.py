@@ -1,16 +1,21 @@
 import os
 import argparse
 import pandas as pd
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-# from catboost import CatBoostClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
+from xgboost import XGBRegressor, XGBRFRegressor
+from lightgbm import LGBMRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, accuracy_score
 import joblib
 import datetime
 import logging
+import mlflow
+import mlflow.sklearn
+import mlflow.xgboost
+import mlflow.lightgbm
+from mlflow.models.signature import infer_signature
+# import mlflow.catboost
 
 log_dir = os.path.join(os.path.join(os.getcwd()), "Log")
 os.makedirs(log_dir, exist_ok=True)
@@ -27,6 +32,8 @@ def load_data(data_dir):
     logging.info(f"Loading data from {data_dir}...")
     X_path = os.path.join(data_dir, "X_train.csv")
     y_path = os.path.join(data_dir, "y_train.csv")
+    X_test_path = os.path.join(data_dir, "X_test.csv") 
+    y_test_path = os.path.join(data_dir, "y_test.csv") 
 
     if not os.path.exists(X_path):
         raise FileNotFoundError(f"The file {X_path} does not exist.")
@@ -36,53 +43,108 @@ def load_data(data_dir):
 
     X_train = pd.read_csv(X_path)
     y_train = pd.read_csv(y_path)
+    X_test = pd.read_csv(X_test_path)
+    y_test = pd.read_csv(y_test_path)
 
     if isinstance(y_train, pd.DataFrame):
         y_train = y_train.iloc[:, 0]  # Extract first column if y_train is a DataFrame
 
     logging.info("Data loaded successfully.")
-    return X_train, y_train
+    return X_train, y_train, X_test, y_test
 
 
-def train_model(X_train, y_train, model_name="xgboost", params=None):
+def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=None):
     logging.info(f"Training the model: {model_name}...")
 
-    # Choose model based on input
-    if model_name == "xgboost":
-        model = XGBClassifier(**(params or {}))
-    elif model_name == "lgbm" or model_name == "gbdt":
-        model = LGBMClassifier(**(params or {}))
-    # elif model_name == 'catboost':
-    #     model = CatBoostClassifier(verbose=0, **(params or {}))
-    elif model_name == "random_forest":
-        model = RandomForestClassifier(
-            n_estimators=100, random_state=42, **(params or {})
-        )
-    elif model_name == "svm":
-        model = SVC(**(params or {}))
-    elif model_name == "logistic_regression":
-        model = LogisticRegression(**(params or {}))
-    else:
-        raise ValueError(
-            f"Model {model_name} is not supported. Choose from 'xgboost', 'catboost', 'lgbm', 'gbdt', 'random_forest', 'svm', or 'logistic_regression'."
-        )
+    # Set MLflow tracking URI
+    mlruns_dir = "Model/mlruns"
+    mlflow.set_tracking_uri(mlruns_dir)
+    
+    # Start an MLflow run
+    with mlflow.start_run():
+        # Choose model based on input
+        if model_name == "xgboost":
+            model = XGBRegressor(**(params or {}))
+            log_model_func = mlflow.xgboost.log_model
+        elif model_name == "xgrfboost":
+            model = XGBRFRegressor(**(params or {}))
+            log_model_func = mlflow.xgboost.log_model
+        elif model_name == "lgbm":
+            model = LGBMRegressor(**(params or {}))
+            log_model_func = mlflow.lightgbm.log_model
+        elif model_name == "random_forest":
+            model = RandomForestRegressor(
+                n_estimators=100, random_state=42, **(params or {})
+            )
+            log_model_func = mlflow.sklearn.log_model  # Use Scikit-learn logging
+        elif model_name == "svr":
+            model = SVR(**(params or {}))
+            log_model_func = mlflow.sklearn.log_model  # Use Scikit-learn logging
+        elif model_name == "linear_regression":
+            model = LinearRegression(**(params or {}))
+            log_model_func = mlflow.sklearn.log_model  # Use Scikit-learn logging
+        else:
+            raise ValueError(
+                f"Model {model_name} is not supported. Choose from 'xgboost','xgrfboost, 'lgbm', 'random_forest', 'svr', or 'linear_regression'."
+            )
 
-    try:
-        model.fit(X_train, y_train)
-        logging.info(f"Model {model_name} trained successfully.")
-    except Exception as e:
-        logging.error(f"Error during training: {e}")
-        raise
+        # Log parameters to MLflow
+        mlflow.log_param("model_name", model_name)
+        if params:
+            for param_name, param_value in params.items():
+                mlflow.log_param(param_name, param_value)
+
+        try:
+            # Train the model
+            model.fit(X_train, y_train)
+            logging.info(f"Model {model_name} trained successfully.")
+
+            input_example = X_train[:5]
+            signature = infer_signature(X_train, model.predict(X_train))
+
+            # Log the model using the appropriate function
+            log_model_func(model, "model", signature=signature, input_example=input_example)
+
+            # Evaluate the model
+            evaluate_model(model, X_test, y_test)
+
+        except Exception as e:
+            logging.error(f"Error during training: {e}")
+            # Log error message to a text file
+            error_file_path = "Model/error_log.txt"
+            with open(error_file_path, 'w') as error_file:
+                error_file.write(str(e))
+            mlflow.log_artifact(error_file_path)  # Log the error file to MLflow
+            raise
 
     return model
 
 
-def evaluate_model(model, X_train, y_train):
+def evaluate_model(model, X_test, y_test):
     logging.info("Evaluating the model...")
-    y_train_pred = model.predict(X_train)
-    accuracy = accuracy_score(y_train, y_train_pred)
-    logging.info(f"Training Accuracy: {accuracy:.4f}")
-    return accuracy
+
+    # Predict on the test set
+    y_pred = model.predict(X_test)
+
+    # Compute evaluation metrics
+    mse = mean_squared_error(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    # Optionally compute accuracy for classification models (if it's applicable)
+    try:
+        accuracy = accuracy_score(y_test, y_pred)
+        logging.info(f"Test Accuracy: {accuracy:.4f}")
+        mlflow.log_metric("accuracy", accuracy)
+    except ValueError:
+        logging.info("Accuracy is not applicable for this model type.")
+
+    # Log metrics to MLflow
+    mlflow.log_metric("mse", mse)
+    mlflow.log_metric("mae", mae)
+    mlflow.log_metric("r2", r2)
+
+    logging.info(f"Evaluation metrics - MSE: {mse:.4f}, MAE: {mae:.4f}, R2: {r2:.4f}")
 
 
 def save_model(model, model_dir, model_name, timestamp):
@@ -110,13 +172,11 @@ def save_model(model, model_dir, model_name, timestamp):
 
 def main(data_dir, model_dir, timestamp, model_name="xgboost", params=None):
     # Load training data
-    X_train, y_train = load_data(data_dir)
+    X_train, y_train, X_test, y_test = load_data(data_dir)
 
     # Train the model
-    model = train_model(X_train, y_train, model_name, params)
+    model = train_model(X_train, y_train, X_test, y_test, model_name, params)
 
-    # Evaluate the model
-    evaluate_model(model, X_train, y_train)
 
     # Save the trained model
     save_model(model, model_dir, model_name, timestamp)
@@ -145,7 +205,7 @@ if __name__ == "__main__":
         "--model_name",
         type=str,
         default="xgboost",
-        help="Model to train. Options: 'xgboost', 'lgbm', 'random_forest', 'svm', 'logistic_regression'.",
+        help="Model to train. Options: 'xgboost', 'xgfrboost, 'lgbm', 'random_forest', 'svr', 'linear_regression'.",
     )
     parser.add_argument(
         "-p",
@@ -165,11 +225,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Convert params from JSON string to Python dictionary, if provided
-    params = None
+    import json
     if args.params:
-        import json
-
         params = json.loads(args.params)
+    else:
+        params = {}
 
     main(
         args.data_dir, args.model_dir, args.timestamp, args.model_name, params

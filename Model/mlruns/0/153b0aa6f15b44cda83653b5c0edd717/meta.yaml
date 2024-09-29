@@ -1,0 +1,15 @@
+artifact_uri: /Users/fauzanghaza/Documents/[04]Student/[03]Competition/[06]IFest/Machine_learning/stress-checker-model/Model/mlruns/0/153b0aa6f15b44cda83653b5c0edd717/artifacts
+end_time: 1727579231783
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 153b0aa6f15b44cda83653b5c0edd717
+run_name: salty-newt-75
+run_uuid: 153b0aa6f15b44cda83653b5c0edd717
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1727579228675
+status: 3
+tags: []
+user_id: fauzanghaza

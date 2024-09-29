@@ -1,0 +1,15 @@
+artifact_uri: /Users/fauzanghaza/Documents/[04]Student/[03]Competition/[06]IFest/Machine_learning/stress-checker-model/Model/mlruns/0/9f4e37901cac4363b3fad23b67ec87ca/artifacts
+end_time: 1727579044448
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9f4e37901cac4363b3fad23b67ec87ca
+run_name: merciful-tern-370
+run_uuid: 9f4e37901cac4363b3fad23b67ec87ca
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1727579044134
+status: 4
+tags: []
+user_id: fauzanghaza
