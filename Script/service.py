@@ -5,7 +5,7 @@ import pickle
 import bentoml
 import mlflow
 import shap
-import joblib
+import xgboost as xgb
 import numpy as np
 from bentoml.io import JSON
 from bentoml.exceptions import BentoMLException
@@ -39,7 +39,7 @@ def get_latest_preprocessor_path():
         latest_dir = os.path.join('./Model/bentoml/models/stress_checker_scaler', latest_version_folder)
         
         logger.info(f"Latest preprocessor found in folder: {latest_dir}")
-
+        
         # The scaler file inside the latest directory (e.g., 'saved_model.pkl')
         return os.path.join(latest_dir, 'saved_model.pkl')
     
@@ -95,12 +95,11 @@ async def classify(input_data):
         # Use the model to make predictions
         result = await model_runner.async_run(input_scaled)
         
-
         # Log the prediction result for debugging
         logging.info(f"Model prediction result: {result}")
         
         logged_model = 'models:/stress_checker/latest'
-        model = mlflow.sklearn.load_model(logged_model)
+        model, halo = load_model_based_on_flavor(logged_model)
         
         explainer = shap.Explainer(model)
         shap_values = explainer(input_df)
@@ -110,7 +109,8 @@ async def classify(input_data):
         # Return the result as a JSON response
         return {
             "predictions": result.tolist(),
-            'text': recomendation
+            'text': recomendation,
+            'oke': halo
             }
 
     except Exception as e:
@@ -150,6 +150,25 @@ def validate_input_data(input_df):
     if (input_df["anxiety_level"] < 0).any() or (input_df["anxiety_level"] > 100).any():
         raise ValueError("anxiety_level values should be between 0 and 100.")
 
+
+# Function to load model based on flavor
+def load_model_based_on_flavor(model_uri):
+    flavor = mlflow.models.get_model_info(model_uri).flavors
+
+    # Check if it's an XGBoost model
+    if "xgboost" in flavor:
+        return mlflow.xgboost.load_model(model_uri)
+    # Check if it's a Scikit-learn model
+    elif "sklearn" in flavor:
+        return mlflow.sklearn.load_model(model_uri)
+    # Check if it's a LightGBM model
+    elif "lightgbm" in flavor:
+        return mlflow.lightgbm.load_model(model_uri), 'halooo'
+    # Add more model types as needed
+    else:
+        raise ValueError("Model type not supported")
+    
+    
 def generate_shap_recommendations(input_df, shap_values):
     """
     Generate SHAP explanations and recommendations for the input data.
