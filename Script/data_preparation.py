@@ -1,5 +1,6 @@
 import os
 import argparse
+import bentoml
 import pandas as pd
 import joblib
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -18,6 +19,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+os.environ["BENTOML_HOME"] = "./Model/bentoml"
 
 # Function to load data
 def load_data(file_path):
@@ -57,6 +59,7 @@ def scale(X):
     numerical_cols = X.select_dtypes(include=["float64", "int64"]).columns
     X[numerical_cols] = scaler.fit_transform(X[numerical_cols])
     logging.info(f"Numerical columns scaled: {numerical_cols.tolist()}")
+    bentoml.picklable_model.save_model("stress_checker_scaler", scaler)
     return X, scaler
 
 

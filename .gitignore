@@ -171,9 +171,13 @@ Log/
 # MLflow artifacts
 Model/mlruns/
 
+# Bentoml artifacts
+Model/bentoml/
+
 # Models and preprocessor
 Model/models/
 Model/model/
+Model/metadata/
 Model/preprocessor/
 
 # Results and output

@@ -10,3 +10,5 @@ mlflow
 ipykernel
 seaborn
 bentoml
+pydantic=1.10.7
+shap

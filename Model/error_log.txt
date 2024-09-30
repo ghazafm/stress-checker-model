@@ -1,1 +1,1 @@
-local variable 'log_model_func' referenced before assignment
+0

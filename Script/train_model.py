@@ -14,6 +14,8 @@ import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
 import mlflow.lightgbm
+import shap
+import pickle
 from mlflow.models.signature import infer_signature
 # import mlflow.catboost
 
@@ -60,6 +62,7 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
     mlruns_dir = "Model/mlruns"
     mlflow.set_tracking_uri(mlruns_dir)
     
+    model = ''
     # Start an MLflow run
     with mlflow.start_run():
         # Choose model based on input
@@ -87,7 +90,8 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
             raise ValueError(
                 f"Model {model_name} is not supported. Choose from 'xgboost','xgrfboost, 'lgbm', 'random_forest', 'svr', or 'linear_regression'."
             )
-
+            
+        
         # Log parameters to MLflow
         mlflow.log_param("model_name", model_name)
         if params:
@@ -107,6 +111,21 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
 
             # Evaluate the model
             evaluate_model(model, X_test, y_test)
+            
+            explainer = shap.TreeExplainer(model)
+            shap_values = explainer(X_train[:100])  # You can use a subset for SHAP calculation
+
+            # Save the SHAP explainer to a file
+            with open("shap_explainer.pkl", "wb") as f:
+                pickle.dump(explainer, f)
+
+            # Log the SHAP explainer file
+            mlflow.log_artifact("shap_explainer.pkl")
+
+            # (Optional) Log SHAP values as well if you want
+            with open("shap_values.pkl", "wb") as f:
+                pickle.dump(shap_values, f)
+            mlflow.log_artifact("shap_values.pkl")
 
         except Exception as e:
             logging.error(f"Error during training: {e}")

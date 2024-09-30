@@ -1,9 +1,11 @@
-name: myenv
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-  - python=3.10
+service: 'script.service:svc'
+labels:
+  owner: fauzanghaza
+  project: stress_checker
+include:
+  - '*.py'
+python:
+  packages:
   - pandas
   - scikit-learn
   - xgboost
@@ -16,5 +18,5 @@ dependencies:
   - ipykernel
   - seaborn
   - bentoml
-  - pydantic=1.10.7
+  - pydantic==1.10.7
   - shap

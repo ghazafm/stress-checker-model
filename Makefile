@@ -18,6 +18,7 @@ TIMESTAMP_FILE = timestamp.txt
 LATEST_MODEL = $(shell ls -t $(MODEL_DIR)/*.pkl | head -n 1)
 
 VENV_DIR = myenv
+CONDA_ENV = myenv/
 VENV_ACTIVATE = source $(VENV_DIR)/bin/activate
 PYTHON = $(VENV_DIR)/bin/python
 REQUIREMENTS_FILE = requirements.txt
@@ -29,6 +30,11 @@ ARTIFACT_ROOT = Model/mlruns
 
 MODEL_NAME ?= xgboost
 PARAMS ?= 
+
+BENTO_SERVICE = script.service
+BENTO_MODEL = stress_checker
+
+export BENTOML_HOME = ./Model/bentoml
 
 # Default target
 .PHONY: all
@@ -90,32 +96,32 @@ timestamp:
 data: check_env timestamp
 	@echo
 	@echo "Collecting and preparing data..."
-	$(PYTHON) Script/data_preparation.py --data_dir $(DATA_DIR) --data_new $(NEW_DATA_DIR) --output_dir $(PREPROCESSOR_DIR) --target_col $(TARGET_COL) --random_state $(RANDOM_STATE) --columns_to_remove $(COLUMN_TO_REMOVE) --timestamp $(shell cat $(TIMESTAMP_FILE))
+	$(PYTHON) script/data_preparation.py --data_dir $(DATA_DIR) --data_new $(NEW_DATA_DIR) --output_dir $(PREPROCESSOR_DIR) --target_col $(TARGET_COL) --random_state $(RANDOM_STATE) --columns_to_remove $(COLUMN_TO_REMOVE) --timestamp $(shell cat $(TIMESTAMP_FILE))
 	@echo "Data preparation completed."
 
 # Model training
 .PHONY: train
-train: data
+train:
 	@echo
 	@echo "Training the machine learning model with model: $(MODEL_NAME) and params: $(PARAMS)"
-	$(PYTHON) Script/train_model.py --data_dir $(NEW_DATA_DIR) --model_dir $(MODEL_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE)) --model_name $(MODEL_NAME) --params '$(PARAMS)'
+	$(PYTHON) script/train_model.py --data_dir $(NEW_DATA_DIR) --model_dir $(MODEL_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE)) --model_name $(MODEL_NAME) --params '$(PARAMS)'
 	@echo "Model training completed."
 
 # Model evaluation
 .PHONY: evaluate
-evaluate: train
+evaluate:
 	@echo
 	@echo "Evaluating the trained model..."
-	$(PYTHON) Script/evaluate_model.py --model $(LATEST_MODEL) --results_dir $(SCORE_RESULTS_DIR) --data_dir $(NEW_DATA_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE))
+	$(PYTHON) script/evaluate_model.py --model $(LATEST_MODEL) --results_dir $(SCORE_RESULTS_DIR) --data_dir $(NEW_DATA_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE))
 	@echo "Model evaluation completed."
 
-# Model deployment (saving the model)
-.PHONY: deploy
-deploy: train
-	@echo
-	@echo "Deploying the trained model..."
-	$(PYTHON) Script/deploy_model.py --model_path $(LATEST_MODEL) --model_dir $(MODEL_DIR) --metadata_dir $(METADATA_RESULT_DIR) > $(DEPLOYED_MODEL_FILE) --timestamp $(shell cat $(TIMESTAMP_FILE))
-	@echo "Model has been saved and deployed. Model path stored in $(DEPLOYED_MODEL_FILE)."
+# # Model deployment (saving the model)
+# .PHONY: deploy
+# deploy:
+# 	@echo
+# 	@echo "Deploying the trained model..."
+# 	$(PYTHON) script/deploy_model.py --model_path $(LATEST_MODEL) --model_dir $(MODEL_DIR) --metadata_dir $(METADATA_RESULT_DIR) > $(DEPLOYED_MODEL_FILE) --timestamp $(shell cat $(TIMESTAMP_FILE))
+# 	@echo "Model has been saved and deployed. Model path stored in $(DEPLOYED_MODEL_FILE)."
 
 .PHONY: mlflow
 mlflow: check-env
@@ -146,13 +152,82 @@ check-env:
 	fi
 
 # Prediction on new data using the deployed model
-.PHONY: predict
-predict: deploy
-	@echo
-	@echo "Running predictions on new data using the deployed model..."
-	@echo "Using deployed model: $(DEPLOYED_MODEL)"
-	$(PYTHON) Script/predict_data.py --model $(DEPLOYED_MODEL) --preprocessor $(PREPROCESSOR_DIR) --data_dir $(DATA_DIR) --predict_dir $(PREDICT_DATA_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE)) --id_col $(ID_COL)
-	@echo "Predictions saved."
+# .PHONY: predict
+# predict: deploy
+# 	@echo
+# 	@echo "Running predictions on new data using the deployed model..."
+# 	@echo "Using deployed model: $(DEPLOYED_MODEL)"
+# 	$(PYTHON) script/predict_data.py --model $(DEPLOYED_MODEL) --preprocessor $(PREPROCESSOR_DIR) --data_dir $(DATA_DIR) --predict_dir $(PREDICT_DATA_DIR) --timestamp $(shell cat $(TIMESTAMP_FILE)) --id_col $(ID_COL)
+# 	@echo "Predictions saved."
+
+
+# Command to run import.py and deploy with BentoML
+.PHONY: serve
+serve: import_bentoml start_bentoml
+
+# Step 1: Import the model into BentoML using import.py
+.PHONY: import_bentoml
+import_bentoml:
+	@echo "Importing model into BentoML..."
+	$(PYTHON) script/import.py -m $(BENTO_MODEL)
+	@echo "Model import completed."
+
+# Step 2: Start BentoML service after importing the model
+.PHONY: start_bentoml
+start_bentoml: check_env
+	@echo "Starting BentoML service with auto-reload..."
+	@if [ "$(USE_VENV)" = "true" ]; then \
+		echo "Using venv environment"; \
+		$(VENV_ACTIVATE) && bentoml serve $(BENTO_SERVICE) --reload; \
+	else \
+		echo "Using conda environment"; \
+		source $(shell conda info --base)/etc/profile.d/conda.sh && \
+		conda activate $(CONDA_ENV) && \
+		bentoml serve $(BENTO_SERVICE) --reload; \
+	fi
+	@echo "BentoML service started."
+
+.PHONY: build
+build: check_env
+	@echo "Making BentoML bentos & Docker image"
+	@if [ "$(USE_VENV)" = "true" ]; then \
+		echo "Using venv environment"; \
+		echo "building...."; \
+		$(VENV_ACTIVATE) && bentoml build -f ./Model/bentofile.yaml --containerize;\
+	else \
+		echo "Using conda environment"; \
+		echo "building...."; \
+		source $(shell conda info --base)/etc/profile.d/conda.sh && \
+		conda activate $(CONDA_ENV) && \
+		bentoml build -f ./Model/bentofile.yaml --containerize; \
+	fi
+	@echo "BentoML bentos & Docker image builded."
+
+.PHONY: containerize
+containerize:
+	@echo "Making BentoML image"
+	@if [ "$(USE_VENV)" = "true" ]; then \
+		echo "Using venv environment"; \
+		echo "building...."; \
+		$(VENV_ACTIVATE) && bentoml containerize stress_checker:latest; \
+	else \
+		echo "Using conda environment"; \
+		echo "building...."; \
+		source $(shell conda info --base)/etc/profile.d/conda.sh && \
+		conda activate $(CONDA_ENV) && \
+		bentoml containerize stress_checker:latest; \
+	fi
+	@echo "Docker image builded."
+
+.PHONY: deploy
+deploy:
+	@echo "Running BentoML container..."
+	@if docker run -it --rm -p 3000:3000 stress_checker:latest serve; then \
+		echo "BentoML container is running on port 3000."; \
+	else \
+		echo "Error: Failed to run the BentoML container." >&2; \
+		exit 1; \
+	fi
 
 # Clean all data, models, and results
 .PHONY: clean
