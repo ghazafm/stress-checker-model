@@ -10,7 +10,10 @@ mlflow
 ipykernel
 seaborn
 bentoml
+bentoml[grpc]
 pydantic=1.10.7
 shap
 tensorflow
 keras
+grpcio-health-checking
+opentelemetry-instrumentation-grpc

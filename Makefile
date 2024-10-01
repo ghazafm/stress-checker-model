@@ -165,6 +165,15 @@ check-env:
 .PHONY: serve
 serve: import_bentoml start_bentoml
 
+.PHONY: serve_grpc
+serve_grpc: import_bentoml start_bentoml_grpc
+
+.PHONY: serve_only
+serve_only: start_bentoml
+
+.PHONY: serve_grpc_only
+serve_grpc_only: start_bentoml_grpc
+
 # Step 1: Import the model into BentoML using import.py
 .PHONY: import_bentoml
 import_bentoml:
@@ -184,6 +193,20 @@ start_bentoml: check_env
 		source $(shell conda info --base)/etc/profile.d/conda.sh && \
 		conda activate $(CONDA_ENV) && \
 		bentoml serve $(BENTO_SERVICE) --reload; \
+	fi
+	@echo "BentoML service started."
+
+.PHONY: start_bentoml_grpc
+start_bentoml_grpc: check_env
+	@echo "Starting BentoML service with auto-reload..."
+	@if [ "$(USE_VENV)" = "true" ]; then \
+		echo "Using venv environment"; \
+		$(VENV_ACTIVATE) && bentoml grpc $(BENTO_SERVICE) --reload; \
+	else \
+		echo "Using conda environment"; \
+		source $(shell conda info --base)/etc/profile.d/conda.sh && \
+		conda activate $(CONDA_ENV) && \
+		bentoml grpc $(BENTO_SERVICE) --reload; \
 	fi
 	@echo "BentoML service started."
 
