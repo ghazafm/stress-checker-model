@@ -6,7 +6,12 @@ from lightgbm import LGBMRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, accuracy_score
+from sklearn.metrics import (
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score,
+    accuracy_score,
+)
 import joblib
 import datetime
 import logging
@@ -14,11 +19,8 @@ import mlflow
 import mlflow.sklearn
 import mlflow.xgboost
 import mlflow.lightgbm
-import shap
-import pickle
 from mlflow.models.signature import infer_signature
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from keras import Sequential, layers
 from mlflow.models.signature import infer_signature
 
 log_dir = os.path.join(os.path.join(os.getcwd()), "Log")
@@ -36,8 +38,8 @@ def load_data(data_dir):
     logging.info(f"Loading data from {data_dir}...")
     X_path = os.path.join(data_dir, "X_train.csv")
     y_path = os.path.join(data_dir, "y_train.csv")
-    X_test_path = os.path.join(data_dir, "X_test.csv") 
-    y_test_path = os.path.join(data_dir, "y_test.csv") 
+    X_test_path = os.path.join(data_dir, "X_test.csv")
+    y_test_path = os.path.join(data_dir, "y_test.csv")
 
     if not os.path.exists(X_path):
         raise FileNotFoundError(f"The file {X_path} does not exist.")
@@ -63,8 +65,8 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
     # Set MLflow tracking URI
     mlruns_dir = "Model/mlruns"
     mlflow.set_tracking_uri(mlruns_dir)
-    
-    model = ''
+
+    model = ""
     # Start an MLflow run
     with mlflow.start_run():
         # Choose model based on input
@@ -92,21 +94,34 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
             # Define a simple ANN using Keras Sequential API
             model = Sequential()
             input_dim = X_train.shape[1]  # Number of input features
-            model.add(Dense(64, input_dim=input_dim, activation='relu'))
-            model.add(Dense(32, activation='relu'))
-            model.add(Dense(1))  # Output layer for regression
-            
-            model.compile(optimizer='adam', loss='mean_squared_error')
+            model.add(layers.Dense(64, input_dim=input_dim, activation="relu"))
+            model.add(layers.Dense(32, activation="relu"))
+            model.add(layers.Dense(1))
+
+            model.compile(optimizer="adam", loss="mean_squared_error")
             log_model_func = mlflow.keras.log_model  # Use MLflow's Keras logging
-            
+
             # Train the ANN model
-            model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=1)
+            mlflow.keras.autolog()
+            model.fit(
+                X_train,
+                y_train,
+                epochs=50,
+                batch_size=32,
+                validation_data=(X_test, y_test),
+                verbose=2,
+            )
+            mlflow.log_param("model_name", model_name)
+            if params:
+                for param_name, param_value in params.items():
+                    mlflow.log_param(param_name, param_value)
+            evaluate_model(model, X_test, y_test)
+            return model
         else:
             raise ValueError(
                 f"Model {model_name} is not supported. Choose from 'xgboost','xgrfboost, 'lgbm', 'random_forest', 'svr', or 'linear_regression'."
             )
-            
-        
+
         # Log parameters to MLflow
         mlflow.log_param("model_name", model_name)
         if params:
@@ -122,7 +137,9 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
             signature = infer_signature(X_train, model.predict(X_train))
 
             # Log the model using the appropriate function
-            log_model_func(model, "model", signature=signature, input_example=input_example)
+            log_model_func(
+                model, "model", signature=signature, input_example=input_example
+            )
 
             # Evaluate the model
             evaluate_model(model, X_test, y_test)
@@ -131,7 +148,7 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
             logging.error(f"Error during training: {e}")
             # Log error message to a text file
             error_file_path = "Model/error_log.txt"
-            with open(error_file_path, 'w') as error_file:
+            with open(error_file_path, "w") as error_file:
                 error_file.write(str(e))
             mlflow.log_artifact(error_file_path)  # Log the error file to MLflow
             raise
@@ -196,7 +213,6 @@ def main(data_dir, model_dir, timestamp, model_name="xgboost", params=None):
     # Train the model
     model = train_model(X_train, y_train, X_test, y_test, model_name, params)
 
-
     # Save the trained model
     save_model(model, model_dir, model_name, timestamp)
 
@@ -245,11 +261,10 @@ if __name__ == "__main__":
 
     # Convert params from JSON string to Python dictionary, if provided
     import json
+
     if args.params:
         params = json.loads(args.params)
     else:
         params = {}
 
-    main(
-        args.data_dir, args.model_dir, args.timestamp, args.model_name, params
-    )
+    main(args.data_dir, args.model_dir, args.timestamp, args.model_name, params)

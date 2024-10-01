@@ -1,1 +1,1 @@
-0
+All fields in the model signature's input schema must be of type TensorSpec.

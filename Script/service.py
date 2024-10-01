@@ -82,7 +82,7 @@ async def classify(input_data):
         input_df = pd.DataFrame([input_data])
 
         # Cast all input data to float64 to match the model schema
-        input_df = input_df.astype('float64')
+        input_df = input_df.astype('float32')
 
         # Validate the input data
         validate_input_data(input_df)
@@ -99,9 +99,12 @@ async def classify(input_data):
         logging.info(f"Model prediction result: {result}")
         
         logged_model = 'models:/stress_checker/latest'
-        model = load_model_based_on_flavor(logged_model)
+        model, flavor = load_model_based_on_flavor(logged_model)
         
-        explainer = shap.Explainer(model)
+        if "keras" in flavor:
+            explainer = shap.Explainer(model, input_scaled)
+        else:
+            explainer = shap.Explainer(model)
         shap_values = explainer(input_df)
         
         recomendation = generate_shap_recommendations(input_scaled, shap_values)
@@ -117,7 +120,7 @@ async def classify(input_data):
         return {
             "error": str(e),
             "input": input_data,
-            # "shap": result
+            "flavor": flavor
             
         }
 
@@ -158,30 +161,30 @@ def load_model_based_on_flavor(model_uri):
     # Check if it's an XGBoost model
     if "xgboost" in model_info:
         print(f"Loading XGBoost model from {model_uri}")
-        return mlflow.xgboost.load_model(model_uri)
+        return mlflow.xgboost.load_model(model_uri), model_info
     # Check if it's a Scikit-learn model
     elif "sklearn" in model_info:
         print(f"Loading Scikit-learn model from {model_uri}")
-        return mlflow.sklearn.load_model(model_uri)
+        return mlflow.sklearn.load_model(model_uri), model_info
     # Check if it's a LightGBM model
     elif "lightgbm" in model_info:
         print(f"Loading LightGBM model from {model_uri}")
-        return mlflow.lightgbm.load_model(model_uri)
+        return mlflow.lightgbm.load_model(model_uri), model_info
     # Check if it's a Keras model (for ANN)
     elif "keras" in model_info:
         print(f"Loading Keras model from {model_uri}")
-        return mlflow.keras.load_model(model_uri)
+        return mlflow.keras.load_model(model_uri), model_info
     # Check if it's a PyFunc model (generic ML models)
     elif "python_function" in model_info:
         print(f"Loading PyFunc model from {model_uri}")
-        return mlflow.pyfunc.load_model(model_uri)
+        return mlflow.pyfunc.load_model(model_uri), model_info
     # Add support for more model flavors, like CatBoost, ONNX, etc.
     elif "catboost" in model_info:
         print(f"Loading CatBoost model from {model_uri}")
-        return mlflow.catboost.load_model(model_uri)
+        return mlflow.catboost.load_model(model_uri), model_info
     elif "onnx" in model_info:
         print(f"Loading ONNX model from {model_uri}")
-        return mlflow.onnx.load_model(model_uri)
+        return mlflow.onnx.load_model(model_uri), model_info
     else:
         raise ValueError(f"Model type {model_info} not supported or unknown flavor.")
     
