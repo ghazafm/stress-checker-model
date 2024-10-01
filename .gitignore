@@ -170,6 +170,7 @@ Log/
 
 # MLflow artifacts
 Model/mlruns/
+mlruns/
 
 # Bentoml artifacts
 Model/bentoml/
