@@ -6,6 +6,7 @@ from lightgbm import LGBMRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
+import numpy as np
 from sklearn.metrics import (
     mean_squared_error,
     mean_absolute_error,
@@ -106,7 +107,7 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
             model.fit(
                 X_train,
                 y_train,
-                epochs=50,
+                epochs=1000,
                 batch_size=32,
                 validation_data=(X_test, y_test),
                 verbose=2,
@@ -134,7 +135,8 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
                 logging.info(f"Model {model_name} trained successfully.")
 
             input_example = X_train[:5]
-            signature = infer_signature(X_train, model.predict(X_train))
+            predictions = np.clip(model.predict(X_train), 0, 100)  
+            signature = infer_signature(X_train, predictions)
 
             # Log the model using the appropriate function
             log_model_func(
@@ -161,6 +163,7 @@ def evaluate_model(model, X_test, y_test):
 
     # Predict on the test set
     y_pred = model.predict(X_test)
+    y_pred = np.clip(y_pred, 0, 100)  
 
     # Compute evaluation metrics
     mse = mean_squared_error(y_test, y_pred)

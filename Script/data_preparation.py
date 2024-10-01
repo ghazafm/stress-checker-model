@@ -96,15 +96,29 @@ def clean_data(df, columns_to_remove=None):
     logging.info("Data cleaning completed.")
     return df, label_encoders, imputer
 
+def map_column(dataset, mapping_dict):
+    """
+    General function to map values in a specific column based on a provided mapping dictionary.
+
+    Parameters:
+    dataset (pd.DataFrame): The dataset containing the column to be mapped.
+    mapping_dict (dict): A dictionary defining the mapping from original values to new values.
+
+    Example:
+    map_column(dataset, 'stress_level', {1: 0, 2: 50, 3: 100})
+    """
+    return dataset.map(mapping_dict)
 
 # Split data into training and testing sets
 def split_data(df, target, test_size=0.2, random_state=42):
     logging.info(
         f"Splitting data into train and test sets with test_size={test_size} and random_state={random_state}..."
     )
-
+    
+    df['stress_level'] = map_column(df['stress_level'], {0: 0, 1: 50, 2: 100})
     X = df.drop(columns=[target])
     y = df[target]
+    
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
