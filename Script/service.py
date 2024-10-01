@@ -99,7 +99,7 @@ async def classify(input_data):
         logging.info(f"Model prediction result: {result}")
         
         logged_model = 'models:/stress_checker/latest'
-        model, halo = load_model_based_on_flavor(logged_model)
+        model = load_model_based_on_flavor(logged_model)
         
         explainer = shap.Explainer(model)
         shap_values = explainer(input_df)
@@ -110,7 +110,6 @@ async def classify(input_data):
         return {
             "predictions": result.tolist(),
             'text': recomendation,
-            'oke': halo
             }
 
     except Exception as e:
@@ -151,22 +150,40 @@ def validate_input_data(input_df):
         raise ValueError("anxiety_level values should be between 0 and 100.")
 
 
-# Function to load model based on flavor
+# Function to load a model based on its flavor
 def load_model_based_on_flavor(model_uri):
-    flavor = mlflow.models.get_model_info(model_uri).flavors
+    # Get the model's flavor information
+    model_info = mlflow.models.get_model_info(model_uri).flavors
 
     # Check if it's an XGBoost model
-    if "xgboost" in flavor:
+    if "xgboost" in model_info:
+        print(f"Loading XGBoost model from {model_uri}")
         return mlflow.xgboost.load_model(model_uri)
     # Check if it's a Scikit-learn model
-    elif "sklearn" in flavor:
+    elif "sklearn" in model_info:
+        print(f"Loading Scikit-learn model from {model_uri}")
         return mlflow.sklearn.load_model(model_uri)
     # Check if it's a LightGBM model
-    elif "lightgbm" in flavor:
-        return mlflow.lightgbm.load_model(model_uri), 'halooo'
-    # Add more model types as needed
+    elif "lightgbm" in model_info:
+        print(f"Loading LightGBM model from {model_uri}")
+        return mlflow.lightgbm.load_model(model_uri)
+    # Check if it's a Keras model (for ANN)
+    elif "keras" in model_info:
+        print(f"Loading Keras model from {model_uri}")
+        return mlflow.keras.load_model(model_uri)
+    # Check if it's a PyFunc model (generic ML models)
+    elif "python_function" in model_info:
+        print(f"Loading PyFunc model from {model_uri}")
+        return mlflow.pyfunc.load_model(model_uri)
+    # Add support for more model flavors, like CatBoost, ONNX, etc.
+    elif "catboost" in model_info:
+        print(f"Loading CatBoost model from {model_uri}")
+        return mlflow.catboost.load_model(model_uri)
+    elif "onnx" in model_info:
+        print(f"Loading ONNX model from {model_uri}")
+        return mlflow.onnx.load_model(model_uri)
     else:
-        raise ValueError("Model type not supported")
+        raise ValueError(f"Model type {model_info} not supported or unknown flavor.")
     
     
 def generate_shap_recommendations(input_df, shap_values):

@@ -193,13 +193,13 @@ build: check_env
 	@if [ "$(USE_VENV)" = "true" ]; then \
 		echo "Using venv environment"; \
 		echo "building...."; \
-		$(VENV_ACTIVATE) && bentoml build -f ./Model/bentofile.yaml --containerize;\
+		$(VENV_ACTIVATE) && bentoml build -f ./Model/bentofile.yaml;\
 	else \
 		echo "Using conda environment"; \
 		echo "building...."; \
 		source $(shell conda info --base)/etc/profile.d/conda.sh && \
 		conda activate $(CONDA_ENV) && \
-		bentoml build -f ./Model/bentofile.yaml --containerize; \
+		bentoml build -f ./Model/bentofile.yaml; \
 	fi
 	@echo "BentoML bentos & Docker image builded."
 

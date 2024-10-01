@@ -17,7 +17,9 @@ import mlflow.lightgbm
 import shap
 import pickle
 from mlflow.models.signature import infer_signature
-# import mlflow.catboost
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from mlflow.models.signature import infer_signature
 
 log_dir = os.path.join(os.path.join(os.getcwd()), "Log")
 os.makedirs(log_dir, exist_ok=True)
@@ -86,6 +88,19 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
         elif model_name == "linear_regression":
             model = LinearRegression(**(params or {}))
             log_model_func = mlflow.sklearn.log_model  # Use Scikit-learn logging
+        elif model_name == "ann":  # New ANN option
+            # Define a simple ANN using Keras Sequential API
+            model = Sequential()
+            input_dim = X_train.shape[1]  # Number of input features
+            model.add(Dense(64, input_dim=input_dim, activation='relu'))
+            model.add(Dense(32, activation='relu'))
+            model.add(Dense(1))  # Output layer for regression
+            
+            model.compile(optimizer='adam', loss='mean_squared_error')
+            log_model_func = mlflow.keras.log_model  # Use MLflow's Keras logging
+            
+            # Train the ANN model
+            model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=1)
         else:
             raise ValueError(
                 f"Model {model_name} is not supported. Choose from 'xgboost','xgrfboost, 'lgbm', 'random_forest', 'svr', or 'linear_regression'."
@@ -99,9 +114,9 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
                 mlflow.log_param(param_name, param_value)
 
         try:
-            # Train the model
-            model.fit(X_train, y_train)
-            logging.info(f"Model {model_name} trained successfully.")
+            if model_name != "ann":  # ANN training already done above
+                model.fit(X_train, y_train)
+                logging.info(f"Model {model_name} trained successfully.")
 
             input_example = X_train[:5]
             signature = infer_signature(X_train, model.predict(X_train))
@@ -111,21 +126,6 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
 
             # Evaluate the model
             evaluate_model(model, X_test, y_test)
-            
-            explainer = shap.TreeExplainer(model)
-            shap_values = explainer(X_train[:100])  # You can use a subset for SHAP calculation
-
-            # Save the SHAP explainer to a file
-            with open("shap_explainer.pkl", "wb") as f:
-                pickle.dump(explainer, f)
-
-            # Log the SHAP explainer file
-            mlflow.log_artifact("shap_explainer.pkl")
-
-            # (Optional) Log SHAP values as well if you want
-            with open("shap_values.pkl", "wb") as f:
-                pickle.dump(shap_values, f)
-            mlflow.log_artifact("shap_values.pkl")
 
         except Exception as e:
             logging.error(f"Error during training: {e}")

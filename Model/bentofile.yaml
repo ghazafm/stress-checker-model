@@ -4,6 +4,7 @@ labels:
   project: stress_checker
 include:
   - '*.py'
+  - './Model/bentoml/models/stress_checker_scaler/*'
 python:
   packages:
   - pandas
