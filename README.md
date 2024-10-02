@@ -2,30 +2,33 @@
 
 ## 📚 Table of Contents
 - [📝 Project Overview](#overview)
-- [📁 Directory Structure](#directory-structure)
-- [⚙️ Setup and Installation](#setup-and-installation)
-  - [🐍 Conda Environment Setup](#conda-environment-setup)
-  - [🔧 Virtual Environment (venv) Setup](#virtual-environment-setup)
-- [📊 Data Workflow](#data-workflow)
-  - [📂 Data Collection and Preprocessing](#data-collection-and-preprocessing)
-- [🧠 Modeling and Deployment](#modeling-and-deployment)
-  - [🚀 Model Training](#model-training)
-  - [📈 Model Evaluation](#model-evaluation)
-  - [📦 Model Deployment](#model-deployment)
-- [🔬 Experiment Tracking with MLFlow](#experiment-tracking-with-mlflow)
-- [🌐 Model Serving with BentoML](#model-serving-with-bentoml)
-  - [🖥️ Serving via HTTP](#serving-via-http)
-  - [🔗 Serving via gRPC](#serving-via-grpc)
-- [🛠️ Building and Containerizing](#building-and-containerizing)
+- [📁 Directory Structure](#project-structure)
+- [⚙️ Setup and Installation](#environment-setup)
+  - [🐍 Conda Environment Setup](#conda-setup)
+  - [🔧 Virtual Environment (venv) Setup](#virtual-environment-setup-(venv))
+- [📊 Data Workflow](#data-processing)
+  - [📂 Data Collection and Preprocessing](#data-processing)
+- [🧠 Modeling and Deployment](#modeling-training,-evaluation,-and-deployment)
+  - [🚀 Model Training](#training-the-model)
+  - [📈 Model Evaluation](#evaluating-the-model)
+  - [📦 Model Deployment](#deploying-the-model)
+- [🔬 Experiment Tracking with MLFlow](#running-mlflow)
+- [🌐 Model Serving with BentoML](#serving-with-bentoml)
+  - [🖥️ Serving via HTTP](#serving-http-with-bentoml)
+  - [🔗 Serving via gRPC](#serving-grpc-with-bentoml)
+  - [📦 Deploy with BentoML](#deploy-with-bentoml)
+- [🛠️ Building and Containerizing](#building-and-containerizing-with-bentoml)
   - [🏗️ Build BentoML Bentos](#build-bentoml-bentos)
-  - [🐳 Containerize BentoML Service](#containerize-bentoml-service)
+  - [🐳 Containerize BentoML Service](#containerizing-bentoml)
 - [🧹 Cleaning Up](#cleaning-up)
-  - [🧽 Full Cleanup](#full-cleanup)
-  - [🧼 Deep Cleanup](#deep-cleanup)
-- [📜 Commands Reference](#commands-reference)
-- [👥 Contributing](#contributing)
-- [📧 Contact and Support](#contact-and-support)
+  - [🧽 Full Cleanup](#cleaning-up)
+  - [🧼 Deep Cleanup](#cleaning-up)
+- [👥 Contributions](#contributions)
+- [🐞 Bug Reports and Feature Requests](#bug-reports-and-feature-requests)
+- [🙏 Acknowledgments](#acknowledgments)
+- [🔮 Future Enhancements](#future-enhancements)
 - [📄 License](#license)
+- [📧 Contact](#contact)
 
 ---
 
@@ -218,20 +221,6 @@ Here is the complete list of available commands:
 
 ---
 
-## License
-This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this software, provided that the original authors are credited.
-
----
-
-## Contact
-For any questions or inquiries, please feel free to reach out:
-
-- **Email**: contact@fauzanghaza.com
-- **LinkedIn**: [LinkedIn Profile](https://www.linkedin.com/in/fauzanghaza)
-- **GitHub**: [GitHub Profile](https://github.com/ghazafm)
-
----
-
 ## Contributions
 Contributions are welcome! If you'd like to contribute to this project, please follow these steps:
 
@@ -274,3 +263,17 @@ In future iterations of this project, the following enhancements are planned:
 - Building a REST API for real-time predictions.
 - Improving data preprocessing pipelines with more advanced feature engineering.
 - Adding more advanced hyperparameter tuning options.
+
+---
+
+## License
+This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this software, provided that the original authors are credited.
+
+---
+
+## Contact
+For any questions or inquiries, please feel free to reach out:
+
+- **Email**: contact@fauzanghaza.com
+- **LinkedIn**: [LinkedIn Profile](https://www.linkedin.com/in/fauzanghaza)
+- **GitHub**: [GitHub Profile](https://github.com/ghazafm)
