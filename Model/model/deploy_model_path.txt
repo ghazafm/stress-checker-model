@@ -1,1 +1,1 @@
-Model/model/XGBClassifier_deployed_20240910_184528.pkl
+Model/model/RandomForestRegressor_deployed_20241002_111938.pkl

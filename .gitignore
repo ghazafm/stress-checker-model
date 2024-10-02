@@ -191,3 +191,6 @@ Script/temp*.py
 .DS_Store
 .vscode/
 
+# Data
+Data/clean/*
+
