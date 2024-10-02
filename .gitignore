@@ -187,7 +187,6 @@ Result/
 
 # Temporary files
 script/temp*.py
-script
 
 # OS or editor-specific files
 .DS_Store
