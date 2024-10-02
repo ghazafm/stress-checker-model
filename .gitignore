@@ -193,4 +193,5 @@ Script/temp*.py
 
 # Data
 Data/clean/*
+Model/error_log.txt
 
