@@ -113,7 +113,7 @@ check_env:
 .PHONY: conda_env
 conda_env:
 	@echo "Creating Conda environment..."
-	conda env create -f $(ENVIRONMENT_FILE) -p $(VENV_DIR) -y
+	conda env create -f $(ENVIRONMENT_FILE) -p $(VENV_DIR) -y --solver=libmamba
 	@echo "Environment created using $(ENVIRONMENT_FILE)."
 
 .PHONY: venv_env
