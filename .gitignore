@@ -176,6 +176,7 @@ mlruns/
 Model/bentoml/
 
 # Models and preprocessor
+
 Model/models/
 Model/model/
 Model/metadata/
@@ -185,7 +186,8 @@ Model/preprocessor/
 Result/
 
 # Temporary files
-Script/temp*.py
+script/temp*.py
+script
 
 # OS or editor-specific files
 .DS_Store
