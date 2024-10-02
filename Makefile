@@ -55,19 +55,49 @@ all: help
 # ------------------------
 # Help Target
 # ------------------------
+# ------------------------
+# Help Target
+# ------------------------
 .PHONY: help
 help:
 	@echo "Usage:"
-	@echo "  make conda_env               : Create and activate the Conda environment."
-	@echo "  make venv_env                : Create and activate the Python virtual environment using venv."
-	@echo "  make data                    : Run data collection and preparation steps."
-	@echo "  make train                   : Train the machine learning model."
-	@echo "  make evaluate                : Evaluate the trained model."
-	@echo "  make deploy                  : Save and deploy the trained model."
-	@echo "  make predict                 : Run predictions on new data."
-	@echo "  make clean                   : Clean all data, model, and result directories."
-	@echo "  make serve                   : Serve model with BentoML"
-	@echo "  make containerize            : Build a Docker image for BentoML service."
+	@echo "  Environment Setup:"
+	@echo "    make conda_env               : Create and activate the Conda environment."
+	@echo "    make venv_env                : Create and activate the Python virtual environment using venv."
+	@echo ""
+	@echo "  Data Processing:"
+	@echo "    make data                    : Run data collection and preparation steps."
+	@echo "    make clean_data              : Clean processed data files."
+	@echo ""
+	@echo "  Model Training, Evaluation, and Deployment:"
+	@echo "    make train                   : Train the machine learning model."
+	@echo "    make evaluate                : Evaluate the trained model."
+	@echo "    make deploy                  : Save and deploy the trained model."
+	@echo "    make clean_models            : Clean trained model files."
+	@echo "    make clean_results           : Clean model evaluation results."
+	@echo ""
+	@echo "  MLflow Commands:"
+	@echo "    make mlflow                  : Start the MLflow server."
+	@echo "    make clean_mlflow            : Clean up MLflow files."
+	@echo "    make clean_mlflow_deep       : Perform a deep clean of all MLflow files."
+	@echo ""
+	@echo "  BentoML Commands:"
+	@echo "    make serve                   : Start BentoML HTTP service."
+	@echo "    make serve_grpc              : Start BentoML gRPC service."
+	@echo "    make build              		: Make BentoML Bentos."
+	@echo "    make containerize            : Build Docker image for BentoML service."
+	@echo "    make deploy_bento            : Run BentoML HTTP container."
+	@echo "    make deploy_bento_grpc       : Run BentoML gRPC container."
+	@echo "    make clean_bento             : Clean up BentoML files."
+	@echo ""
+	@echo "  Utility Commands:"
+	@echo "    make timestamp               : Generate a timestamp for model tracking."
+	@echo "    make clean_log               : Clean log files."
+	@echo ""
+	@echo "  Clean Up:"
+	@echo "    make clean                   : Clean all data, models, results, logs, BentoML, and MLflow files."
+	@echo "    make deep_clean              : Perform a deep clean (data, models, results, BentoML, and MLflow)."
+
 
 # ------------------------
 # Environment Setup
