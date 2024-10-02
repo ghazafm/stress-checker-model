@@ -1,9 +1,7 @@
 # Stress Checker Machine Learning Project
 
-Adding icons can certainly make the Table of Contents more visually appealing and engaging. Here’s a modified version of the **Table of Contents** with relevant icons:
-
 ## 📚 Table of Contents
-- [📝 Project Overview](#project-overview)
+- [📝 Project Overview](#overview)
 - [📁 Directory Structure](#directory-structure)
 - [⚙️ Setup and Installation](#setup-and-installation)
   - [🐍 Conda Environment Setup](#conda-environment-setup)
