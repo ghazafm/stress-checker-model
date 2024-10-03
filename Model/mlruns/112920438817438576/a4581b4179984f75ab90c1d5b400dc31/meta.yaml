@@ -1,0 +1,15 @@
+artifact_uri: /Users/fauzanghaza/Documents/[04]Student/[03]Competition/[06]IFest/stress-checker-model/Model/mlruns/112920438817438576/a4581b4179984f75ab90c1d5b400dc31/artifacts
+end_time: 1727951205444
+entry_point_name: ''
+experiment_id: '112920438817438576'
+lifecycle_stage: active
+run_id: a4581b4179984f75ab90c1d5b400dc31
+run_name: worried-worm-460
+run_uuid: a4581b4179984f75ab90c1d5b400dc31
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1727951202229
+status: 3
+tags: []
+user_id: fauzanghaza

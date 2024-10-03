@@ -1,0 +1,52 @@
+conda:
+  channels: null
+  dependencies: null
+  environment_yml: null
+  pip: null
+description: null
+docker:
+  base_image: null
+  cuda_version: null
+  distro: debian
+  dockerfile_template: null
+  env: null
+  python_version: '3.10'
+  setup_script: null
+  system_packages: null
+envs: []
+exclude: []
+include:
+- '*.py'
+- ./Model/bentoml/models/stress_checker_scaler/*
+labels:
+  owner: fauzanghaza
+  project: stress_checker
+models: []
+name: null
+python:
+  extra_index_url: null
+  find_links: null
+  index_url: null
+  lock_packages: true
+  no_index: null
+  pack_git_packages: true
+  packages:
+  - pandas
+  - scikit-learn
+  - xgboost
+  - numpy
+  - imbalanced-learn
+  - matplotlib
+  - lightgbm
+  - catboost
+  - mlflow
+  - ipykernel
+  - seaborn
+  - bentoml
+  - pydantic==1.10.7
+  - shap
+  pip_args: null
+  requirements_txt: null
+  trusted_host: null
+  wheels: null
+service: script.service:svc

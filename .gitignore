@@ -169,18 +169,18 @@ myenv/
 Log/
 
 # MLflow artifacts
-Model/mlruns/
-mlruns/
+# Model/mlruns/
+# mlruns/
 
 # Bentoml artifacts
-Model/bentoml/
+# Model/bentoml/
 
 # Models and preprocessor
 
-Model/models/
-Model/model/
-Model/metadata/
-Model/preprocessor/
+# Model/models/
+# Model/model/
+# Model/metadata/
+# Model/preprocessor/
 
 # Results and output
 Result/
@@ -193,7 +193,7 @@ script/temp*.py
 .vscode/
 
 # Data
-Data/clean/*
-Model/error_log.txt
-timestamp.txt
+# Data/clean/*
+# Model/error_log.txt
+# timestamp.txt
 

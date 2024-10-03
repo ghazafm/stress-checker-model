@@ -1,0 +1,18 @@
+name: stress_checker_scaler
+version: vlemrjebnom7alra
+module: bentoml.picklable_model
+labels: {}
+options:
+  partial_kwargs: {}
+metadata: {}
+context:
+  framework_name: cloudpickle
+  framework_versions:
+    cloudpickle: 3.0.0
+  bentoml_version: 1.2.20
+  python_version: 3.10.15
+signatures:
+  __call__:
+    batchable: false
+api_version: v1
+creation_time: '2024-10-03T09:41:29.854970+00:00'

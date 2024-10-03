@@ -1,0 +1,67 @@
+service: script.service:svc
+name: stress_checker
+version: n3kie2ubognaqlra
+bentoml_version: 1.2.20
+creation_time: '2024-10-03T10:23:37.582650+00:00'
+labels:
+  owner: fauzanghaza
+  project: stress_checker
+models:
+- tag: stress_checker:uljm7iebocm7wlra
+  module: bentoml.mlflow
+  creation_time: '2024-10-03T10:17:03.982311+00:00'
+runners:
+- name: stress_checker
+  runnable_type: MLflowPyfuncRunnable
+  embedded: false
+  models:
+  - stress_checker:uljm7iebocm7wlra
+  resource_config: null
+entry_service: stress_checker
+services: []
+envs: []
+schema: {}
+apis:
+- name: classify
+  input_type: JSON
+  output_type: JSON
+docker:
+  distro: debian
+  python_version: '3.10'
+  cuda_version: null
+  env: null
+  system_packages: null
+  setup_script: null
+  base_image: null
+  dockerfile_template: null
+python:
+  requirements_txt: null
+  packages:
+  - pandas
+  - scikit-learn
+  - xgboost
+  - numpy
+  - imbalanced-learn
+  - matplotlib
+  - lightgbm
+  - catboost
+  - mlflow
+  - ipykernel
+  - seaborn
+  - bentoml
+  - pydantic==1.10.7
+  - shap
+  lock_packages: true
+  pack_git_packages: true
+  index_url: null
+  no_index: null
+  trusted_host: null
+  find_links: null
+  extra_index_url: null
+  pip_args: null
+  wheels: null
+conda:
+  environment_yml: null
+  channels: null
+  dependencies: null
+  pip: null

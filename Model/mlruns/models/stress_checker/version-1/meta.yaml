@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1727950611927
+current_stage: None
+description: ''
+last_updated_timestamp: 1727950611927
+name: stress_checker
+run_id: a49f514846ba460aaf0f3be77baf52e9
+run_link: ''
+source: /Users/fauzanghaza/Documents/[04]Student/[03]Competition/[06]IFest/stress-checker-model/Model/mlruns/112920438817438576/a49f514846ba460aaf0f3be77baf52e9/artifacts/model
+status: READY
+status_message: null
+storage_location: /Users/fauzanghaza/Documents/[04]Student/[03]Competition/[06]IFest/stress-checker-model/Model/mlruns/112920438817438576/a49f514846ba460aaf0f3be77baf52e9/artifacts/model
+user_id: null
+version: 1
