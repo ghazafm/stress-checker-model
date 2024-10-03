@@ -169,11 +169,11 @@ myenv/
 Log/
 
 MLflow artifacts
-Model/mlruns/
-mlruns/
+Model/mlruns/*
+mlruns
 
 Bentoml artifacts
-Model/bentoml/
+Model/bentoml/*
 
 # Models and preprocessor
 
