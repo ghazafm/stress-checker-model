@@ -66,6 +66,8 @@ def train_model(X_train, y_train, X_test, y_test, model_name="xgboost", params=N
     # Set MLflow tracking URI
     mlruns_dir = "Model/mlruns"
     mlflow.set_tracking_uri(mlruns_dir)
+    experiment_name = "stress_checker"
+    mlflow.set_experiment(experiment_name)
 
     model = ""
     # Start an MLflow run
